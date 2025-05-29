@@ -77,6 +77,34 @@ h1 {
   flex: 1 1 0;
 }
 
+/* Ajustes para colunas específicas */
+
+/* Coluna 1 (primeira div filha) - largura tripla */
+.linha > div:nth-child(1),
+.subtitulo > div:nth-child(1) {
+  flex: 3 1 0;
+}
+
+/* Coluna 3 (terceira div filha) - largura tripla */
+.linha > div:nth-child(3),
+.subtitulo > div:nth-child(3) {
+  flex: 3 1 0;
+}
+
+/* Coluna 4 (quarta div filha) - metade da largura */
+.linha > div:nth-child(4),
+.subtitulo > div:nth-child(4) {
+  flex: 0.5 0 60px;
+  max-width: 80px; /* opcional */
+}
+
+/* Coluna 7 (sétima div filha) - metade da largura */
+.linha > div:nth-child(7),
+.subtitulo > div:nth-child(7) {
+  flex: 0.5 0 60px;
+  max-width: 80px; /* opcional */
+}
+
 /* Badge de número de matriculados */
 .badge {
   background-color: #007bff;
