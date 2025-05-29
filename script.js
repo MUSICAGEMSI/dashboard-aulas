@@ -1,35 +1,34 @@
-const sheetId = "1AUArORvFvApwxR8ZgcgEfNMyIIIfI9ue";
-const sheetName = "VerificaSAM"; // ajuste conforme sua aba real
-const url = `https://opensheet.elk.sh/${sheetId}/${sheetName}`;
+const SHEET_ID = "1AUArORvFvApwxR8ZgcgEfNMyIIIfI9ue";
+const SHEET_GID = "750632160"; // opcional
+const RANGE = "A1:L100"; // ajuste conforme sua necessidade
 
 fetch(url)
-  .then(response => response.json())
-  .then(data => {
-    const tabela = document.createElement("table");
+  .then(res => res.text())
+  .then(text => {
+    const json = JSON.parse(text.substr(47).slice(0, -2));
+    const rows = json.table.rows;
+    const container = document.getElementById("dados-container");
+    container.innerHTML = "";
 
-    // Cabeçalho
-    const thead = tabela.createTHead();
-    const row = thead.insertRow();
-    Object.keys(data[0]).forEach(key => {
-      const th = document.createElement("th");
-      th.textContent = key;
-      row.appendChild(th);
+    rows.slice(1).forEach(row => {
+      const local = row.c[0]?.v || "";
+      const curso = row.c[1]?.v || "";
+      const turma = row.c[2]?.v || "";
+      const faltamLancar = row.c[8]?.v || "";
+      const semRegistro = row.c[10]?.v || "";
+
+      const div = document.createElement("div");
+      div.className = "turma";
+      div.innerHTML = `
+        <h2>${local} — ${curso}</h2>
+        <p><strong>Turma:</strong> ${turma}</p>
+        <p class="faltam">AUSENTES: ${faltamLancar || "OK"}</p>
+        <p class="faltam">SEM REGISTRO: ${semRegistro || "OK"}</p>
+      `;
+      container.appendChild(div);
     });
-
-    // Dados
-    const tbody = tabela.createTBody();
-    data.forEach(item => {
-      const row = tbody.insertRow();
-      Object.values(item).forEach(val => {
-        const cell = row.insertCell();
-        cell.textContent = val;
-      });
-    });
-
-    document.getElementById("tabela-dados").innerHTML = "";
-    document.getElementById("tabela-dados").appendChild(tabela);
   })
   .catch(error => {
-    document.getElementById("tabela-dados").textContent = "Erro ao carregar dados.";
-    console.error("Erro:", error);
+    document.getElementById("dados-container").innerText = "Erro ao carregar os dados.";
+    console.error(error);
   });
