@@ -38,7 +38,7 @@ h1 {
 /* Linhas alternadas */
 .linha {
   display: flex;
-  align-items: center;
+  align-items: flex-start; /* Alinha o topo do texto */
   padding: 8px 0;
   border-bottom: 1px solid #dee2e6;
 }
@@ -51,9 +51,9 @@ h1 {
 .linha > div,
 .subtitulo > div {
   padding: 6px 8px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow: visible;
+  white-space: normal;
+  overflow-wrap: break-word;
   flex: 1; /* Divide igualmente entre colunas */
   font-size: 14px;
 }
