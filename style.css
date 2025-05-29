@@ -22,26 +22,51 @@ h1 {
   padding-left: 10px;
   background-color: #e9ecef;
   padding: 8px;
+  border-radius: 4px;
 }
 
+/* Cabeçalho da grade */
 .subtitulo {
-  background-color: #dee2e6;
+  background-color: #f4f4f4;
   font-weight: bold;
   color: #495057;
+  display: flex;
+  border-bottom: 2px solid #dee2e6;
+  padding: 8px 0;
+}
+
+/* Linhas alternadas */
+.linha {
+  display: flex;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #dee2e6;
 }
 
 .linha:nth-child(even) {
-  background-color: #f1f3f5;
+  background-color: #f9f9f9;
 }
 
-.linha {
-  align-items: center;
-}
-
-.linha > div, .subtitulo > div {
+/* Colunas */
+.linha > div,
+.subtitulo > div {
   padding: 6px 8px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  flex: 1; /* Divide igualmente entre colunas */
+  font-size: 14px;
+}
+
+/* Badge de número de matriculados */
+.badge {
+  background-color: #007bff;
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 50%;
+  font-weight: bold;
+  text-align: center;
+  display: inline-block;
+  min-width: 28px;
 }
 
