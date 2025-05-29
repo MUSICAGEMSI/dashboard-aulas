@@ -1,60 +1,76 @@
-const url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTJqlG7xJhthlPfWhSWBGf6qtYP2uhfVTtPk6uJz2i3oCWbUTdU0rbLy7uWGSb8lQ/pubhtml";
+const urlCSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTJqlG7xJhthlPfWhSWBGf6qtYP2uhfVTtPk6uJz2i3oCWbUTdU0rbLy7uWGSb8lQ/pub?gid=750632160&single=true&output=csv";
 
-fetch(url)
+fetch(urlCSV)
   .then(response => response.text())
-  .then(data => {
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(data, "text/html");
-    const rows = Array.from(doc.querySelectorAll("table tbody tr"));
+  .then(csvText => {
+    const linhas = csvText.trim().split("\n").map(linha => {
+      // Dividir cada linha por vírgula respeitando vírgulas dentro de texto (CSV simples)
+      // Assumimos que não tem vírgulas internas, senão precisa parser CSV real
+      return linha.split(",").map(c => c.trim());
+    });
 
     const content = document.getElementById("content");
-    let currentGroup = "";
+    content.innerHTML = "";
 
-    rows.forEach(row => {
-      const cols = Array.from(row.querySelectorAll("td")).map(td => td.textContent.trim());
+    let grupoAtual = "";
 
-      if (cols.length < 10) return; // Ignorar linhas incompletas
+    // Cabeçalho fixo para exibir as colunas conforme definição acima
+    const cabecalhoTexto = [
+      "Localidade", "Curso", "Nomenclatura", "Matriculados",
+      "Início", "Término", "Dia", "Hora",
+      "Lançamentos AUSENTES", "Lançamentos SEM REGISTROS"
+    ];
 
-      const localidade = cols[0];
+    for (let i = 1; i < linhas.length; i++) {
+      const col = linhas[i];
 
-      if (localidade !== currentGroup) {
-        currentGroup = localidade;
+      // Verificar se linha possui ao menos 10 colunas e se a coluna H (índice 7) NÃO está vazia, para continuar
+      if (col.length < 10) continue;
+      if (!col[7]) continue;
 
-        // Adiciona título
-        const titulo = document.createElement("div");
-        titulo.className = "titulo";
-        titulo.textContent = currentGroup;
-        content.appendChild(titulo);
+      const localidade = col[0];
 
-        // Adiciona cabeçalho
-        const cabecalho = document.createElement("div");
-        cabecalho.className = "subtitulo";
-        [
-          "Localidade", "Curso", "Nomenclatura", "Matriculados",
-          "Início", "Término", "Dia", "Hora",
-          "Lançamentos AUSENTES", "Lançamentos SEM REGISTROS"
-        ].forEach(txt => {
-          const col = document.createElement("div");
-          col.textContent = txt;
-          cabecalho.appendChild(col);
+      if (localidade !== grupoAtual) {
+        grupoAtual = localidade;
+
+        // Criar título de grupo (localidade)
+        const tituloDiv = document.createElement("div");
+        tituloDiv.className = "titulo";
+        tituloDiv.textContent = grupoAtual;
+        content.appendChild(tituloDiv);
+
+        // Criar cabeçalho da tabela para o grupo
+        const cabecalhoDiv = document.createElement("div");
+        cabecalhoDiv.className = "subtitulo";
+        cabecalhoTexto.forEach(textoCol => {
+          const colDiv = document.createElement("div");
+          colDiv.textContent = textoCol;
+          cabecalhoDiv.appendChild(colDiv);
         });
-        content.appendChild(cabecalho);
+        content.appendChild(cabecalhoDiv);
       }
 
-      // Adiciona linha de dados
-      const linha = document.createElement("div");
-      linha.className = "linha";
+      // Criar linha com os dados (primeiras 10 colunas conforme definido)
+      const linhaDiv = document.createElement("div");
+      linhaDiv.className = "linha";
 
-      cols.slice(0, 10).forEach(txt => {
-        const col = document.createElement("div");
-        col.textContent = txt;
-        linha.appendChild(col);
-      });
+      for (let j = 0; j < 10; j++) {
+        const celulaDiv = document.createElement("div");
+        celulaDiv.textContent = col[j] || "";
+        linhaDiv.appendChild(celulaDiv);
+      }
 
-      content.appendChild(linha);
-    });
+      content.appendChild(linhaDiv);
+    }
+
+    // Caso não tenha sido carregado nenhum grupo (planilha vazia ou apenas linhas inválidas)
+    if (!content.hasChildNodes()) {
+      content.textContent = "Nenhum dado válido encontrado na planilha.";
+    }
   })
-  .catch(err => {
-    document.getElementById("content").textContent = "Erro ao carregar dados.";
-    console.error("Erro ao buscar a planilha:", err);
+  .catch(error => {
+    const content = document.getElementById("content");
+    content.textContent = "Erro ao carregar os dados da planilha.";
+    console.error("Erro no fetch da planilha CSV:", error);
   });
+
