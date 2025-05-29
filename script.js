@@ -1,85 +1,60 @@
-const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTJqlG7xJhthlPfWhSWBGf6qtYP2uhfVTtPk6uJz2i3oCWbUTdU0rbLy7uWGSb8lQ/pub?output=csv";
+const url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTJqlG7xJhthlPfWhSWBGf6qtYP2uhfVTtPk6uJz2i3oCWbUTdU0rbLy7uWGSb8lQ/pubhtml";
 
-document.addEventListener("DOMContentLoaded", () => {
-  Papa.parse(csvUrl, {
-    download: true,
-    header: false,
-    complete: function(results) {
-      const data = results.data.filter(row => row[0] !== ""); // remove linhas vazias
+fetch(url)
+  .then(response => response.text())
+  .then(data => {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(data, "text/html");
+    const rows = Array.from(doc.querySelectorAll("table tbody tr"));
 
-      const grupos = agruparPorLocalidade(data);
-      renderizarGrupos(grupos);
-    }
-  });
-});
+    const content = document.getElementById("content");
+    let currentGroup = "";
 
-function agruparPorLocalidade(data) {
-  const grupos = {};
+    rows.forEach(row => {
+      const cols = Array.from(row.querySelectorAll("td")).map(td => td.textContent.trim());
 
-  for (const linha of data) {
-    const localidade = linha[0].trim();
+      if (cols.length < 10) return; // Ignorar linhas incompletas
 
-    if (!grupos[localidade]) {
-      grupos[localidade] = [];
-    }
+      const localidade = cols[0];
 
-    grupos[localidade].push({
-      curso: linha[1],
-      turma: linha[2],
-      matriculados: linha[3],
-      inicio: linha[4],
-      termino: linha[5],
-      dia: linha[6],
-      hora: linha[7],
-      ausentes: linha[8],
-      semRegistro: linha[9]
-    });
-  }
+      if (localidade !== currentGroup) {
+        currentGroup = localidade;
 
-  return grupos;
-}
+        // Adiciona título
+        const titulo = document.createElement("div");
+        titulo.className = "titulo";
+        titulo.textContent = currentGroup;
+        content.appendChild(titulo);
 
-function renderizarGrupos(grupos) {
-  const container = document.getElementById("container");
+        // Adiciona cabeçalho
+        const cabecalho = document.createElement("div");
+        cabecalho.className = "subtitulo";
+        [
+          "Localidade", "Curso", "Nomenclatura", "Matriculados",
+          "Início", "Término", "Dia", "Hora",
+          "Lançamentos AUSENTES", "Lançamentos SEM REGISTROS"
+        ].forEach(txt => {
+          const col = document.createElement("div");
+          col.textContent = txt;
+          cabecalho.appendChild(col);
+        });
+        content.appendChild(cabecalho);
+      }
 
-  for (const localidade in grupos) {
-    const titulo = document.createElement("div");
-    titulo.className = "localidade-titulo";
-    titulo.textContent = localidade;
-    container.appendChild(titulo);
-
-    const subtitulo = document.createElement("div");
-    subtitulo.className = "subtitulo";
-    subtitulo.innerHTML = `
-      <div>Curso</div>
-      <div>Nomenclatura</div>
-      <div>Matriculados</div>
-      <div>Início</div>
-      <div>Término</div>
-      <div>Dia</div>
-      <div>Hora</div>
-      <div>Lançamentos AUSENTES</div>
-      <div>Lançamentos SEM REGISTROS</div>
-      <div></div> <!-- Para espaçamento -->
-    `;
-    container.appendChild(subtitulo);
-
-    grupos[localidade].forEach(dado => {
+      // Adiciona linha de dados
       const linha = document.createElement("div");
-      linha.className = "linha-dados";
-      linha.innerHTML = `
-        <div>${dado.curso}</div>
-        <div>${dado.turma}</div>
-        <div>${dado.matriculados}</div>
-        <div>${dado.inicio}</div>
-        <div>${dado.termino}</div>
-        <div>${dado.dia}</div>
-        <div>${dado.hora}</div>
-        <div>${dado.ausentes}</div>
-        <div>${dado.semRegistro}</div>
-        <div></div>
-      `;
-      container.appendChild(linha);
+      linha.className = "linha";
+
+      cols.slice(0, 10).forEach(txt => {
+        const col = document.createElement("div");
+        col.textContent = txt;
+        linha.appendChild(col);
+      });
+
+      content.appendChild(linha);
     });
-  }
-}
+  })
+  .catch(err => {
+    document.getElementById("content").textContent = "Erro ao carregar dados.";
+    console.error("Erro ao buscar a planilha:", err);
+  });
