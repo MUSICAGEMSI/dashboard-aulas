@@ -47,15 +47,34 @@ h1 {
   background-color: #f9f9f9;
 }
 
-/* Colunas */
+/* Colunas padrão */
 .linha > div,
 .subtitulo > div {
   padding: 6px 8px;
   overflow: visible;
   white-space: normal;
   overflow-wrap: break-word;
-  flex: 1; /* Divide igualmente entre colunas */
   font-size: 14px;
+  /* Removido flex: 1 daqui para aplicar flex específico nas colunas */
+}
+
+/* Coluna dia: ocupa menos espaço */
+.linha > div.dia,
+.subtitulo > div.dia {
+  flex: 0.5 0 60px; /* flex-grow:0.5, flex-shrink:0, flex-basis:60px */
+  max-width: 80px;  /* opcional para limitar máximo */
+}
+
+/* Coluna nomenclatura: ocupa mais espaço */
+.linha > div.nomenclatura,
+.subtitulo > div.nomenclatura {
+  flex: 3 1 0; /* flex-grow:3, flex-shrink:1, flex-basis:0 */
+}
+
+/* Outras colunas */
+.linha > div:not(.dia):not(.nomenclatura),
+.subtitulo > div:not(.dia):not(.nomenclatura) {
+  flex: 1 1 0;
 }
 
 /* Badge de número de matriculados */
